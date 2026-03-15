@@ -8,13 +8,12 @@ import {
   deleteProductService,
   toggleFeaturedService,
 } from "../service/productService";
-import { getParam } from '../library/helpers/requestHelper';
+import { getParam } from "../library/helpers/requestHelper";
 import {
   createProductValidator,
   updateProductValidator,
   productQueryValidator,
 } from "../utils/validators/productValidator";
-
 
 /* -------------------------------------------------------------------------- */
 /*                             VALIDATION HELPER                              */
@@ -37,7 +36,10 @@ const validate = (schema: any, data: any) => {
 /*                               GET ALL PRODUCTS                             */
 /* -------------------------------------------------------------------------- */
 
-export const getAllProducts = async (req: Request, res: Response): Promise<void> => {
+export const getAllProducts = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   const validation = validate(productQueryValidator, req.query);
 
   if (!validation.isValid) {
@@ -53,7 +55,10 @@ export const getAllProducts = async (req: Request, res: Response): Promise<void>
 /*                              GET PRODUCT BY ID                             */
 /* -------------------------------------------------------------------------- */
 
-export const getProductById = async (req: Request, res: Response): Promise<void> => {
+export const getProductById = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   const result = await getProductByIdService(req.params.id as string);
 
   res.status(result.success ? 200 : 404).json(result);
@@ -65,7 +70,7 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
 
 export const getProductsByCategory = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   const validation = validate(productQueryValidator, req.query);
 
@@ -76,7 +81,7 @@ export const getProductsByCategory = async (
 
   const result = await getProductsByCategoryService(
     req.params.category as string,
-    validation.value
+    validation.value,
   );
 
   res.status(result.success ? 200 : 500).json(result);
@@ -86,31 +91,39 @@ export const getProductsByCategory = async (
 /*                               CREATE PRODUCT                               */
 /* -------------------------------------------------------------------------- */
 
-export const createProduct = async (req: Request, res: Response): Promise<void> => {
-  // Extract Cloudinary URLs from multer-processed files
-  const uploadedImages = req.files
-    ? (req.files as Express.Multer.File[]).map((file: any) => file.path)
-    : [];
+export const createProduct = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const uploadedImages = req.files
+      ? (req.files as Express.Multer.File[]).map((file: any) => file.path)
+      : [];
 
-  // Merge uploaded image URLs into body before validation
-  const body = { ...req.body, images: uploadedImages };
+    const body = { ...req.body, images: uploadedImages };
+    const validation = validate(createProductValidator, body);
 
-  const validation = validate(createProductValidator, body); // ← pass body not req.body
+    if (!validation.isValid) {
+      res.status(400).json({ success: false, message: validation.errors });
+      return;
+    }
 
-  if (!validation.isValid) {
-    res.status(400).json({ success: false, message: validation.errors });
-    return;
+    const result = await createProductService(validation.value);
+    res.status(result.success ? 201 : 400).json(result);
+  } catch (error: any) {
+    console.error("CREATE PRODUCT ERROR:", error.message); // ← add this
+    res.status(500).json({ success: false, message: error.message });
   }
-
-  const result = await createProductService(validation.value);
-  res.status(result.success ? 201 : 400).json(result);
 };
 
 /* -------------------------------------------------------------------------- */
 /*                               UPDATE PRODUCT                               */
 /* -------------------------------------------------------------------------- */
 
-export const updateProduct = async (req: Request, res: Response): Promise<void> => {
+export const updateProduct = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   const newImages = req.files
     ? (req.files as Express.Multer.File[]).map((file: any) => file.path)
     : [];
@@ -124,14 +137,21 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
     return;
   }
 
-  const result = await updateProductService(getParam(req, 'id'), validation.value, newImages);
+  const result = await updateProductService(
+    getParam(req, "id"),
+    validation.value,
+    newImages,
+  );
   res.status(result.success ? 200 : 404).json(result);
 };
 /* -------------------------------------------------------------------------- */
 /*                               DELETE PRODUCT                               */
 /* -------------------------------------------------------------------------- */
 
-export const deleteProduct = async (req: Request, res: Response): Promise<void> => {
+export const deleteProduct = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   const result = await deleteProductService(req.params.id as string);
 
   res.status(result.success ? 200 : 404).json(result);
@@ -141,7 +161,10 @@ export const deleteProduct = async (req: Request, res: Response): Promise<void> 
 /*                               TOGGLE FEATURED                              */
 /* -------------------------------------------------------------------------- */
 
-export const toggleFeatured = async (req: Request, res: Response): Promise<void> => {
+export const toggleFeatured = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   const result = await toggleFeaturedService(req.params.id as string);
 
   res.status(result.success ? 200 : 404).json(result);
