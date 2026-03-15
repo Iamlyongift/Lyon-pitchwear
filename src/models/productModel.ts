@@ -72,6 +72,6 @@ const ProductSchema = new Schema<IProductDocument>(
 // Index for faster queries
 ProductSchema.index({ category: 1, status: 1 });
 ProductSchema.index({ featured: 1 });
-ProductSchema.index({ sku: 1 }, { unique: true });
+
 
 export default mongoose.model<IProductDocument>('Product', ProductSchema);

@@ -8,8 +8,12 @@ import {
   getMyProfile,
   updateProfile,
   changePassword,
+  getAllUsers,
+  getUserById,
+  toggleUserStatus,
 } from '../controller/userController';
 import { protect } from '../middleware/auth';
+import { adminProtect } from '../middleware/adminAuth';
 
 // ─── Auth Routes (/api/auth) ───────────────────────────────────────────────────
 export const authRouter = Router();
@@ -23,6 +27,12 @@ authRouter.post('/reset-password',  resetPassword);
 // ─── User Routes (/api/user) ──────────────────────────────────────────────────
 export const userRouter = Router();
 
+// Customer routes — user token
 userRouter.get('/me',                   protect, getMyProfile);
 userRouter.put('/me',                   protect, updateProfile);
 userRouter.patch('/me/change-password', protect, changePassword);
+
+// Admin routes — admin token
+userRouter.get('/',        adminProtect, getAllUsers);
+userRouter.get('/:id',     adminProtect, getUserById);
+userRouter.patch('/:id/status', adminProtect, toggleUserStatus);

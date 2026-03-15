@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import createError from "http-errors";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
+import cors from 'cors';
 
 import adminRouter from "./routes/adminRouter";
 import {userRouter, authRouter} from "./routes/userRouter";
@@ -20,6 +21,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true,
+}));
 // Routes
 app.use("/api/admin", adminRouter);
 app.use("/api/user", userRouter);
