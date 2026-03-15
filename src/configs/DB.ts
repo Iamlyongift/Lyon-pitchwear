@@ -11,7 +11,7 @@ if (!url) {
 
 export async function connectDB() {
   try {
-    await mongoose.connect(url);
+    await mongoose.connect(process.env.MONGODB_URI as string)
     console.log("✅ Database connected");
   } catch (error) {
     console.error("❌ Database connection error:", error);
