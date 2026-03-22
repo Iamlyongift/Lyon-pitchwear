@@ -1,4 +1,5 @@
-import nodemailer from "nodemailer";
+// import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { IOrderEmailPayload, IWelcomeEmailPayload } from "../types/emailType";
 
 /* -------------------------------------------------------------------------- */
@@ -8,7 +9,7 @@ import { IOrderEmailPayload, IWelcomeEmailPayload } from "../types/emailType";
 const BRAND_NAME = "Lyon Pitchwear";
 const BRAND_TAGLINE = "ELITE PERFORMANCE GEAR";
 const CURRENT_YEAR = new Date().getFullYear();
-
+const resend = new Resend(process.env.SMTP_PASS);
 // const transporter = nodemailer.createTransport({
 //   host: process.env.SMTP_HOST || "smtp.gmail.com",
 //   port: Number(process.env.SMTP_PORT) || 587,
@@ -19,28 +20,14 @@ const CURRENT_YEAR = new Date().getFullYear();
 //   },
 // });
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.resend.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: "resend",
-    pass: process.env.SMTP_PASS,
-  },
-});
-/* -------------------------------------------------------------------------- */
-/*                            CONNECTION VERIFICATION                         */
-/* -------------------------------------------------------------------------- */
-
 export const verifyEmailConnection = async (): Promise<void> => {
   try {
-    await transporter.verify();
+    if (!process.env.SMTP_PASS) throw new Error("SMTP_PASS not set");
     console.log("📧 Email server connected");
   } catch (error) {
     console.error("❌ Email server connection failed:", error);
   }
 };
-
 /* -------------------------------------------------------------------------- */
 /*                               BASE SEND EMAIL                              */
 /* -------------------------------------------------------------------------- */
@@ -50,8 +37,8 @@ const sendEmail = async (
   subject: string,
   html: string,
 ): Promise<void> => {
-  await transporter.sendMail({
-    from: `"${BRAND_NAME}" <onboarding@resend.dev>`,
+  await resend.emails.send({
+    from: "Lyon Pitchwear <onboarding@resend.dev>",
     to,
     subject,
     html,
@@ -240,5 +227,3 @@ export const sendPasswordResetEmail = async (payload: {
     emailWrapper(content),
   );
 };
-
-export default transporter;
