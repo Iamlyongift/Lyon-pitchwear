@@ -3,6 +3,8 @@ import createError from "http-errors";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
 import cors from "cors";
+import passport from "./configs/passportConfig";
+import session from "express-session";
 
 import adminRouter from "./routes/adminRouter";
 import { userRouter, authRouter } from "./routes/userRouter";
@@ -28,6 +30,16 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error("MIDDLEWARE ERROR:", err.message);
   res.status(500).json({ success: false, message: err.message });
 });
+
+// Add before routes
+app.use(
+  session({
+    secret: process.env.JWT_SECRET!,
+    resave: false,
+    saveUninitialized: false,
+  }),
+);
+app.use(passport.initialize());
 
 // Routes
 app.use("/api/admin", adminRouter);
