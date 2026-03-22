@@ -9,16 +9,25 @@ const BRAND_NAME = "Lyon Pitchwear";
 const BRAND_TAGLINE = "ELITE PERFORMANCE GEAR";
 const CURRENT_YEAR = new Date().getFullYear();
 
+// const transporter = nodemailer.createTransport({
+//   host: process.env.SMTP_HOST || "smtp.gmail.com",
+//   port: Number(process.env.SMTP_PORT) || 587,
+//   secure: false,
+//   auth: {
+//     user: process.env.SMTP_USER,
+//     pass: process.env.SMTP_PASS,
+//   },
+// });
+
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: false,
+  host: "smtp.resend.com",
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.SMTP_USER,
+    user: "resend",
     pass: process.env.SMTP_PASS,
   },
 });
-
 /* -------------------------------------------------------------------------- */
 /*                            CONNECTION VERIFICATION                         */
 /* -------------------------------------------------------------------------- */
@@ -39,10 +48,10 @@ export const verifyEmailConnection = async (): Promise<void> => {
 const sendEmail = async (
   to: string,
   subject: string,
-  html: string
+  html: string,
 ): Promise<void> => {
   await transporter.sendMail({
-    from: `"${BRAND_NAME}" <${process.env.SMTP_USER}>`,
+    from: `"${BRAND_NAME}" <onboarding@resend.dev>`,
     to,
     subject,
     html,
@@ -81,7 +90,7 @@ const emailWrapper = (content: string) => `
 /* -------------------------------------------------------------------------- */
 
 export const sendOrderConfirmationEmail = async (
-  payload: IOrderEmailPayload
+  payload: IOrderEmailPayload,
 ): Promise<void> => {
   const { customerName, customerEmail, orderId, items, total } = payload;
 
@@ -92,7 +101,7 @@ export const sendOrderConfirmationEmail = async (
         <td style="padding:8px;border-bottom:1px solid #eee;">${item.name}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;">${item.quantity}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;">₦${item.price.toLocaleString()}</td>
-      </tr>`
+      </tr>`,
     )
     .join("");
 
@@ -130,7 +139,7 @@ export const sendOrderConfirmationEmail = async (
 /* -------------------------------------------------------------------------- */
 
 export const sendWelcomeEmail = async (
-  payload: IWelcomeEmailPayload
+  payload: IWelcomeEmailPayload,
 ): Promise<void> => {
   const { name, email } = payload;
 
@@ -159,7 +168,6 @@ export const sendWelcomeEmail = async (
   await sendEmail(email, "Welcome to Lyon Pitchwear 🏆", html);
 };
 
-
 /* -------------------------------------------------------------------------- */
 /*                           EMAIL VERIFICATION                               */
 /* -------------------------------------------------------------------------- */
@@ -167,7 +175,7 @@ export const sendWelcomeEmail = async (
 export const sendVerificationEmail = async (
   name: string,
   email: string,
-  token: string
+  token: string,
 ): Promise<void> => {
   const verifyUrl = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
 
@@ -190,7 +198,11 @@ export const sendVerificationEmail = async (
     </p>
   `;
 
-  await sendEmail(email, 'Verify your Lyon Pitchwear email', emailWrapper(content));
+  await sendEmail(
+    email,
+    "Verify your Lyon Pitchwear email",
+    emailWrapper(content),
+  );
 };
 
 /* -------------------------------------------------------------------------- */
@@ -222,9 +234,11 @@ export const sendPasswordResetEmail = async (payload: {
     </p>
   `;
 
-  await sendEmail(email, 'Reset your Lyon Pitchwear password', emailWrapper(content));
+  await sendEmail(
+    email,
+    "Reset your Lyon Pitchwear password",
+    emailWrapper(content),
+  );
 };
-
-
 
 export default transporter;
